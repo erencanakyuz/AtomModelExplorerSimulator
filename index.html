@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"> <!-- Default to dark mode -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atom Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="/public/styles.css" rel="stylesheet"> <!-- Correct path -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        /* Basic layout styles */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #040404;
+            /* Fallback background */
+            font-family: 'Inter', sans-serif;
+            color: #E0E0E0;
+            /* Default light text for dark mode */
+        }
+
+        .dark body {
+            /* Plain black background */
+            background-color: #000000;
+            background-image: none;
+            /* Remove gradient */
+        }
+
+        .light body {
+            background: #f3f4f6;
+            /* Light gray background */
+            color: #212121;
+            /* Default dark text for light mode */
+        }
+
+        #app-container {
+            display: grid;
+            /* Updated grid: Remove right sidebar column */
+            grid-template-columns: auto 1fr;
+            /* Sidebar | Canvas */
+            grid-template-rows: auto 1fr auto;
+            /* Top Bar | Main Content | Bottom Panel */
+            grid-template-areas:
+                "top top"
+                "left main"
+                "bottom bottom";
+            flex-grow: 1;
+            overflow: hidden;
+            /* Prevent scrollbars on grid container */
+        }
+
+        #top-bar {
+            grid-area: top;
+        }
+
+        #left-sidebar {
+            grid-area: left;
+        }
+
+        #main-canvas-container {
+            grid-area: main;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas {
+            display: block;
+        }
+
+        /* Remove extra space below canvas */
+        /* #right-sidebar removed */
+        #bottom-panel {
+            grid-area: bottom;
+        }
+
+        /* Smooth transitions */
+        body,
+        .bg-space-gradient,
+        .bg-gray-100,
+        .text-light-text,
+        .text-dark-text,
+        .border-gray-700,
+        .border-gray-300 {
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+        }
+
+        .panel {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        /* Hide scrollbar but allow scrolling */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Fade animations for canvas */
+        .canvas-fade-enter-active,
+        .canvas-fade-leave-active {
+            transition: opacity 0.5s ease;
+        }
+
+        .canvas-fade-enter-from,
+        .canvas-fade-leave-to {
+            opacity: 0;
+        }
+    </style>
+  <script type="module" crossorigin src="/AtomModelExplorerSimulator/assets/index-CaonDRCX.js"></script>
+</head>
+
+<body x-data="{ isDarkMode: true, selectedModel: 'bohr', selectedElement: 'H', isBottomPanelVisible: true }"
+    :class="{ 'dark': isDarkMode, 'light': !isDarkMode }">
+
+    <div id="app-container">
+        <!-- Top Bar -->
+        <header id="top-bar"
+            class="p-3 flex justify-between items-center border-b dark:border-gray-700 light:border-gray-300">
+            <div class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="text-accent">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                </svg>
+                <h1 class="text-xl font-semibold dark:text-light-text light:text-dark-text">Atom Explorer</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button @click="isDarkMode = !isDarkMode" title="Toggle Dark Mode"
+                    class="p-1 rounded hover:bg-gray-500/20">
+                    <!-- Sun Icon (visible in dark mode) -->
+                    <svg x-show="isDarkMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="text-yellow-400">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <!-- Moon Icon (visible in light mode) -->
+                    <svg x-show="!isDarkMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="text-gray-700">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+                <a href="https://github.com/YOUR_USERNAME/atom-explorer" target="_blank" rel="noopener noreferrer"
+                    title="GitHub Repository"
+                    class="p-1 rounded hover:bg-gray-500/20 dark:text-light-text light:text-dark-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                        </path>
+                    </svg>
+                </a>
+            </div>
+        </header>
+
+        <!-- Left Sidebar -->
+        <aside id="left-sidebar"
+            class="w-60 p-4 border-r dark:border-gray-700 light:border-gray-300 overflow-y-auto scrollbar-hide dark:bg-black/10 light:bg-gray-50">
+            <h2 class="text-lg font-semibold mb-3 dark:text-light-text light:text-dark-text">Select Model</h2>
+            <div class="space-y-2 mb-6" id="model-selector">
+                <!-- Radio buttons will be populated by JS -->
+            </div>
+
+            <h2 class="text-lg font-semibold mb-3 dark:text-light-text light:text-dark-text">Select Element</h2>
+            <select id="element-selector"
+                class="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-light-text light:bg-white light:border-gray-300 light:text-dark-text focus:outline-none focus:ring-2 focus:ring-accent">
+                <!-- Options will be populated by JS -->
+            </select>
+        </aside>
+
+        <!-- Main Canvas Area -->
+        <main id="main-canvas-container" class="bg-black relative">
+            <!-- Canvas element will be added/replaced by Three.js/JS -->
+            <div id="loading-indicator"
+                class="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-xl hidden animate-fadeIn">
+                Loading Model...
+            </div>
+        </main>
+
+        <!-- Right Sidebar Removed -->
+        <!-- <aside id="right-sidebar" ... > ... </aside> -->
+
+        <!-- Bottom Panel -->
+        <footer id="bottom-panel" x-show="isBottomPanelVisible"
+            class="p-4 border-t dark:border-gray-700 light:border-gray-300 dark:bg-gray-900/50 light:bg-gray-200/50 backdrop-blur-sm transition duration-300 ease-in-out"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform translate-y-4"
+            x-transition:enter-end="opacity-100 transform translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 transform translate-y-0"
+            x-transition:leave-end="opacity-0 transform translate-y-4">
+
+            <!-- Header Row for Bottom Panel -->
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-md font-semibold dark:text-light-text light:text-dark-text">Info & Controls</h2>
+                <button @click="isBottomPanelVisible = false" title="Hide Panel"
+                    class="p-1 rounded hover:bg-gray-500/20 dark:text-gray-400 light:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content Row for Bottom Panel (Flex layout) -->
+            <div class="flex flex-col md:flex-row gap-6">
+
+                <!-- Element Info Section -->
+                <div class="flex-shrink-0 w-full md:w-64">
+                    <h3
+                        class="text-sm font-semibold mb-2 dark:text-light-text light:text-dark-text border-b dark:border-gray-600 light:border-gray-400 pb-1">
+                        Element Info</h3>
+                    <div id="element-info" class="space-y-1 text-xs dark:text-gray-300 light:text-gray-700">
+                        <p><strong>Name:</strong> <span id="info-name">-</span></p>
+                        <p><strong>Symbol:</strong> <span id="info-symbol">-</span></p>
+                        <p><strong>Atomic Number (Z):</strong> <span id="info-atomic-number">-</span></p>
+                        <p><strong>Atomic Weight:</strong> <span id="info-atomic-weight">-</span></p>
+                        <p><strong>Electron Config:</strong> <span id="info-config">-</span></p>
+                        <p><strong>Shells:</strong> <span id="info-shells">-</span></p>
+                    </div>
+                </div>
+
+                <!-- Model Description Section -->
+                <div class="flex-shrink-0 w-full md:w-72">
+                    <h3
+                        class="text-sm font-semibold mb-2 dark:text-light-text light:text-dark-text border-b dark:border-gray-600 light:border-gray-400 pb-1">
+                        Model Description</h3>
+                    <div id="model-description"
+                        class="text-xs space-y-1 dark:text-gray-400 light:text-gray-600 max-h-24 overflow-y-auto scrollbar-hide">
+                        <p id="model-blurb">Select a model to see its description.</p>
+                    </div>
+                </div>
+
+                <!-- Model Controls Section (Now handled by lil-gui in top-right) -->
+                <!-- <div class="flex-grow"> ... </div> -->
+            </div>
+
+    </div>
+    </footer>
+
+    <!-- Button to reopen bottom panel if closed -->
+    <button x-show="!isBottomPanelVisible" @click="isBottomPanelVisible = true" title="Show Info Panel"
+        class="fixed bottom-4 right-4 bg-accent hover:bg-accent-hover text-white p-2 rounded-full shadow-lg z-50"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-75"
+        x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 transform scale-100"
+        x-transition:leave-end="opacity-0 transform scale-75">
+        <!-- Use an info icon or similar -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+    </button>
+    </div>
+
+</body>
+
+</html>
