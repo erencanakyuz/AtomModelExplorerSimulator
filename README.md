@@ -15,14 +15,10 @@ This project provides an interactive 3D visualization of four fundamental atomic
 *   **Model Controls:** Adjust parameters like animation speed, visual effects (bloom), and model-specific properties using the control panel (top-right).
 *   **Modern Effects:** Utilizes shaders and post-processing (bloom) for enhanced visuals.
 *   **Responsive Layout:** Adapts to different screen sizes.
+![image](https://github.com/user-attachments/assets/439217dd-c403-4b84-98d2-5b8bc07130fe)
+![image](https://github.com/user-attachments/assets/91d8ede3-2d50-4d83-b3a8-ab2ca4d6a478)
 
-## Technologies Used
 
-*   **Three.js:** Core 3D rendering library.
-*   **Vite:** Fast frontend tooling (development server, build process).
-*   **Tailwind CSS:** Utility-first CSS framework for styling the UI.
-*   **Alpine.js:** Minimal JavaScript framework for UI interactions (dark mode toggle, panel visibility).
-*   **lil-gui:** Lightweight graphical user interface for controls.
 
 ## Running Locally
 
